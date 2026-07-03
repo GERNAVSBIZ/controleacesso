@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NavManager - Controle de Acesso</title>
+    <!-- Google Fonts - Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Customizado -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="app-body">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="login-screen">
+        <div class="card login-card">
+            <div class="login-logo-container">
+                <div class="login-logo">⚓</div>
+                <h2 class="login-title">NavManager</h2>
+                <span class="login-subtitle">Controle de Portaria</span>
+            </div>
+            
+            <form id="login-form" autocomplete="off" onsubmit="handleLoginSubmit(event)">
+                <div class="form-group">
+                    <label for="login-username">Usuário</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" id="login-username" required placeholder="DIGITE SEU USUÁRIO" class="text-lowercase">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Senha</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-key input-icon"></i>
+                        <input type="password" id="login-password" required placeholder="DIGITE SUA SENHA">
+                    </div>
+                </div>
+
+                <div class="form-group-checkbox" style="margin-top: 6px;">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="login-remember">
+                        <span class="checkbox-checkmark"></span>
+                        <span class="checkbox-label" style="text-transform: none; font-size: 11px; font-weight: 500; color: var(--text-dark-muted);">
+                            Lembrar-me neste computador
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 14px; font-size: 13px;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Acessar Sistema
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- ESTRUTURA COMPLETA DA APLICAÇÃO (LAYOUT NAVMANAGER) -->
+    <div id="app-layout" class="navmanager-layout hidden">
+
+        <!-- SIDEBAR LATERAL -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">⚓</div>
+                <h1 class="sidebar-title">NavManager</h1>
+            </div>
+
+            <nav class="sidebar-menu">
+                <button class="menu-item active" id="menu-btn-acessos" onclick="switchTab('acessos')">
+                    <i class="fa-solid fa-id-card"></i>
+                    <span>Controle de Portaria</span>
+                </button>
+                <button class="menu-item" id="menu-btn-relatorios" onclick="switchTab('relatorios')">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Relatórios & Dados</span>
+                </button>
+                <button class="menu-item hidden" id="menu-btn-usuarios" onclick="switchTab('usuarios')">
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>Gerenciar Usuários</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-badge" style="margin-bottom: 12px;">
+                    <span class="status-dot animate-pulse"></span>
+                    <span class="status-text">Portaria Online</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-full-width" style="margin-bottom: 8px; border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); color: var(--text-dark-muted);" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair do Sistema
+                </button>
+                <p class="sidebar-tech-info">HTML5 • JS Vanilla • IndexedDB</p>
+            </div>
+        </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-content">
+        <!-- HEADER -->
+        <header class="main-header">
+            <div class="header-left">
+                <h2 class="header-title" id="page-title">Controle de Portaria</h2>
+            </div>
+            <div class="header-right">
+                <div class="live-clock" id="live-clock">Carregando data e hora...</div>
+                <div class="db-status-pill" id="db-status-pill">
+                    <i class="fa-solid fa-database"></i>
+                    <span id="db-status-text">Conectando...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTAINER GERAL DE ACESSOS -->
+        <div class="content-container active-tab-content" id="tab-acessos">
+            <div class="dashboard-grid">
+                
+                <!-- COLUNA DA ESQUERDA: FORMULÁRIO DE REGISTRO -->
+                <section class="card form-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fa-solid fa-user-plus text-accent"></i> Registro de Nova Visita
+                        </h3>
+                    </div>
+                    <form id="visit-form" autocomplete="off" onsubmit="handleFormSubmit(event)">
+                        <!-- CAMPO ID OCULTO PARA EDIÇÃO -->
+                        <input type="hidden" id="visit-id" value="">
+
+                        <!-- Campo Nome Completo -->
+                        <div class="form-group">
+                            <label for="visitor-name">Nome Completo <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-user input-icon"></i>
+                                <input type="text" id="visitor-name" required placeholder="NOME DO VISITANTE" class="text-uppercase" oninput="handleNameInput(event)">
+                            </div>
+                            <div id="name-autocomplete-list" class="autocomplete-dropdown hidden"></div>
+                        </div>
+
+                        <!-- Grid de Documentos -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="visitor-doc-type">Tipo de Documento <span class="required">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-file-invoice input-icon"></i>
+                                    <select id="visitor-doc-type" required>
+                                        <option value="CPF" selected>CPF</option>
+                                        <option value="RG">RG</option>
+                                        <option value="CNH">CNH</option>
+                                        <option value="PASSAPORTE">PASSAPORTE</option>
+                                        <option value="OUTRO">OUTRO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="visitor-doc-number">Número do Documento <span class="required">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-address-card input-icon"></i>
+                                    <input type="text" id="visitor-doc-number" required placeholder="APENAS NÚMEROS OU ID" oninput="handleDocNumberInput(event)">
+                                </div>
+                                <div id="doc-autocomplete-list" class="autocomplete-dropdown hidden"></div>
+                            </div>
+                        </div>
+
+                        <!-- Destino e Finalidade -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="visit-target">Pessoa ou Setor a ser Visitado <span class="required">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-building-user input-icon"></i>
+                                    <input type="text" id="visit-target" required placeholder="EX: DIRETORIA, NOME DO RAMAL" class="text-uppercase">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="visit-purpose">Finalidade da Visita <span class="required">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-circle-info input-icon"></i>
+                                    <input type="text" id="visit-purpose" required placeholder="EX: REUNIÃO, MANUTENÇÃO" class="text-uppercase">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data e Hora de Entrada -->
+                        <div class="form-group">
+                            <div class="label-with-action">
+                                <label for="visit-entry-time">Data e Hora de Entrada <span class="required">*</span></label>
+                                <button type="button" class="btn-time-now-link" onclick="setDateTimeNow('visit-entry-time')" title="Definir Agora">
+                                    <i class="fa-solid fa-clock"></i> Agora
+                                </button>
+                            </div>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-calendar-days input-icon"></i>
+                                <input type="datetime-local" id="visit-entry-time" required>
+                            </div>
+                        </div>
+
+                        <!-- Data e Hora de Saída -->
+                        <div class="form-group">
+                            <div class="label-with-action">
+                                <label for="visit-exit-time">Data e Hora de Saída</label>
+                                <button type="button" class="btn-time-now-link" onclick="setDateTimeNow('visit-exit-time')" title="Definir Agora">
+                                    <i class="fa-solid fa-clock"></i> Agora
+                                </button>
+                            </div>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-calendar-days input-icon"></i>
+                                <input type="datetime-local" id="visit-exit-time">
+                            </div>
+                        </div>
+
+                        <!-- Checkbox Área Restrita -->
+                        <div class="form-group-checkbox">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="visit-restricted" onchange="toggleRestrictedField()">
+                                <span class="checkbox-checkmark"></span>
+                                <span class="checkbox-label">
+                                    <i class="fa-solid fa-triangle-exclamation text-warning"></i> Visita a Área Restrita
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Autorizador (Condicional) -->
+                        <div class="form-group hidden" id="group-authorizer">
+                            <label for="visit-authorizer">Autorizador da Entrada <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-user-shield input-icon"></i>
+                                <input type="text" id="visit-authorizer" placeholder="NOME DO RESPONSÁVEL QUE AUTORIZOU" class="text-uppercase">
+                            </div>
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="form-group">
+                            <label for="visit-notes">Observações</label>
+                            <textarea id="visit-notes" rows="2" placeholder="OBSERVAÇÕES E NOTAS IMPORTANTES SOBRE A VISITA..." class="text-uppercase"></textarea>
+                        </div>
+
+                        <!-- Ações do Formulário -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="clearForm(true)">
+                                <i class="fa-solid fa-eraser"></i> Limpar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btn-submit-form">
+                                <i class="fa-solid fa-circle-check"></i> Registrar Acesso
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- COLUNA DA DIREITA: TABELA E AÇÕES RÁPIDAS -->
+                <section class="card list-card">
+                    <div class="card-header list-header-actions">
+                        <h3 class="card-title">
+                            <i class="fa-solid fa-list-check text-accent"></i> Últimos Acessos do Prédio
+                        </h3>
+                    </div>
+
+                    <!-- Filtros e Barra de Busca -->
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="search-input" placeholder="BUSCAR POR NOME, DOCUMENTO OU SETOR..." oninput="handleSearch()">
+                        </div>
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" id="tab-filter-todos" onclick="setFilter('todos')">
+                                Todos (<span id="count-todos">0</span>)
+                            </button>
+                            <button class="filter-tab" id="tab-filter-ativo" onclick="setFilter('ativo')">
+                                Em Andamento (<span id="count-ativo">0</span>)
+                            </button>
+                            <button class="filter-tab" id="tab-filter-concluido" onclick="setFilter('concluido')">
+                                Finalizados (<span id="count-concluido">0</span>)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabela Container -->
+                    <div class="table-container">
+                        <table class="navmanager-table" id="access-table">
+                            <thead>
+                                <tr>
+                                    <th>Visitante</th>
+                                    <th>Destino / Finalidade</th>
+                                    <th>Entrada / Saída</th>
+                                    <th>Status</th>
+                                    <th class="text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="access-table-body">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                        <div id="no-records-message" class="empty-state hidden">
+                            <i class="fa-solid fa-folder-open empty-icon"></i>
+                            <p>Nenhum registro de acesso encontrado.</p>
+                        </div>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div class="table-pagination">
+                        <div class="pagination-info">
+                            Exibindo <span id="pagination-range">0-0</span> de <span id="pagination-total">0</span> registros
+                        </div>
+                        <div class="pagination-buttons">
+                            <button class="btn-pag" id="btn-prev-page" onclick="prevPage()"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+                            <button class="btn-pag" id="btn-next-page" onclick="nextPage()">Próxima <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <!-- CONTAINER GERAL DE CONFIGURAÇÕES / RELATÓRIOS -->
+        <div class="content-container hidden" id="tab-relatorios">
+            <div class="reports-grid">
+                <!-- Painel de estatísticas rápidas -->
+                <div class="stats-row">
+                    <div class="card stat-card">
+                        <div class="stat-icon bg-blue-100 text-blue-600"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-content">
+                            <h4 class="stat-label">Total de Visitas</h4>
+                            <p class="stat-value" id="stat-total-visits">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon bg-orange-100 text-orange-600"><i class="fa-solid fa-door-open"></i></div>
+                        <div class="stat-content">
+                            <h4 class="stat-label">Visitas Ativas (Em Andamento)</h4>
+                            <p class="stat-value" id="stat-active-visits">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon bg-green-100 text-green-600"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-content">
+                            <h4 class="stat-label">Finalizadas Hoje</h4>
+                            <p class="stat-value" id="stat-today-checkout">0</p>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon bg-red-100 text-red-600"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-content">
+                            <h4 class="stat-label">Visitas em Área Restrita</h4>
+                            <p class="stat-value" id="stat-restricted-visits">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card de Backup e Manutenção do Banco -->
+                <div class="card maintenance-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fa-solid fa-file-shield text-accent"></i> Gerenciamento e Backup de Dados
+                        </h3>
+                    </div>
+                    <div class="maintenance-body">
+                        <p class="maintenance-description">
+                            Os dados são armazenados localmente e de forma segura no seu navegador utilizando IndexedDB. 
+                            Use as ferramentas abaixo para fazer o backup de segurança e importar dados ao trocar de computador.
+                        </p>
+
+                        <div class="action-card-grid">
+                            <div class="action-card">
+                                <div class="action-card-header">
+                                    <i class="fa-solid fa-file-code icon-code text-blue-600"></i>
+                                    <h5>Exportar Backup (JSON)</h5>
+                                </div>
+                                <p>Exporta toda a base de dados em formato legível por máquina para restauração futura.</p>
+                                <button class="btn btn-primary btn-full-width" onclick="exportDatabaseJSON()">
+                                    <i class="fa-solid fa-download"></i> Baixar JSON
+                                </button>
+                            </div>
+
+                            <div class="action-card">
+                                <div class="action-card-header">
+                                    <i class="fa-solid fa-file-csv icon-csv text-green-600"></i>
+                                    <h5>Exportar Planilha (CSV)</h5>
+                                </div>
+                                <p>Exporta os acessos em formato CSV (separado por ponto e vírgula), perfeito para abrir no Excel.</p>
+                                <button class="btn btn-success btn-full-width" onclick="exportDatabaseCSV()">
+                                    <i class="fa-solid fa-file-export"></i> Baixar CSV (Excel)
+                                </button>
+                            </div>
+
+                            <div class="action-card">
+                                <div class="action-card-header">
+                                    <i class="fa-solid fa-file-import icon-import text-orange-600"></i>
+                                    <h5>Importar Backup (JSON)</h5>
+                                </div>
+                                <p>Carrega um arquivo JSON gerado anteriormente para restaurar a lista de visitas.</p>
+                                <div class="import-file-area">
+                                    <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importDatabaseJSON(event)">
+                                    <button class="btn btn-warning btn-full-width" onclick="document.getElementById('import-file-input').click()">
+                                        <i class="fa-solid fa-upload"></i> Selecionar Arquivo JSON
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card de Risco -->
+                        <div class="danger-zone-box">
+                            <div class="danger-zone-header">
+                                <i class="fa-solid fa-circle-exclamation text-danger"></i>
+                                <span>Zona de Risco</span>
+                            </div>
+                            <div class="danger-zone-body">
+                                <p>Esta ação apagará permanentemente todos os registros do sistema do seu navegador. Certifique-se de ter um backup antes de prosseguir.</p>
+                                <button class="btn btn-danger" onclick="triggerClearAllDatabase()">
+                                    <i class="fa-solid fa-trash-can"></i> Limpar Todo o Banco de Dados
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTAINER GERAL DE GERENCIAMENTO DE USUÁRIOS -->
+        <div class="content-container hidden" id="tab-usuarios">
+            <div class="dashboard-grid">
+                <!-- COLUNA DA ESQUERDA: CADASTRO DE USUÁRIO -->
+                <section class="card form-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fa-solid fa-user-plus text-accent"></i> <span id="user-form-title">Novo Usuário</span>
+                        </h3>
+                    </div>
+                    <form id="user-form" autocomplete="off" onsubmit="handleUserFormSubmit(event)">
+                        <!-- Nome Completo -->
+                        <div class="form-group">
+                            <label for="user-fullname">Nome Completo <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-signature input-icon"></i>
+                                <input type="text" id="user-fullname" required placeholder="NOME DO FUNCIONÁRIO" class="text-uppercase">
+                            </div>
+                        </div>
+
+                        <!-- Username e Perfil -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="user-username">Usuário (Login) <span class="required">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-user-tag input-icon"></i>
+                                    <input type="text" id="user-username" required placeholder="EX: JOAO.SILVA" class="text-lowercase" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9._-]/g, '')">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="user-role">Perfil de Acesso <span class="required">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="fa-solid fa-shield-halved input-icon"></i>
+                                    <select id="user-role" required>
+                                        <option value="operator" selected>OPERADOR</option>
+                                        <option value="admin">ADMINISTRADOR</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Senha -->
+                        <div class="form-group">
+                            <div class="label-with-action">
+                                <label for="user-password">Senha <span class="required" id="user-password-star">*</span></label>
+                            </div>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-key input-icon"></i>
+                                <input type="password" id="user-password" required placeholder="SENHA DE ACESSO">
+                            </div>
+                            <span class="visitor-sub-info hidden" id="user-password-helper" style="margin-top: 2px;">
+                                <i class="fa-solid fa-circle-info"></i> Deixe em branco para manter a senha atual.
+                            </span>
+                        </div>
+
+                        <!-- Ações do Formulário -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="clearUserForm(true)">
+                                <i class="fa-solid fa-eraser"></i> Limpar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btn-submit-user">
+                                <i class="fa-solid fa-circle-check"></i> Cadastrar Usuário
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- COLUNA DA DIREITA: LISTA DE USUÁRIOS -->
+                <section class="card list-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fa-solid fa-users text-accent"></i> Usuários Cadastrados
+                        </h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="navmanager-table" id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome Completo</th>
+                                    <th>Usuário</th>
+                                    <th>Perfil</th>
+                                    <th>Criação</th>
+                                    <th class="text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAIS DO SISTEMA -->
+
+    <!-- Modal de Edição Completa -->
+    <div id="edit-modal" class="modal-backdrop hidden">
+        <div class="modal-card shadow-swiss">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa-solid fa-pen-to-square text-accent"></i> Editar Registro de Visita</h4>
+                <button type="button" class="btn-close-modal" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-visit-form" autocomplete="off" onsubmit="handleEditFormSubmit(event)">
+                    <input type="hidden" id="edit-visit-id">
+                    
+                    <div class="form-group">
+                        <label for="edit-visitor-name">Nome Completo <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" id="edit-visitor-name" required class="text-uppercase">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-visitor-doc-type">Tipo de Documento <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-file-invoice input-icon"></i>
+                                <select id="edit-visitor-doc-type" required>
+                                    <option value="CPF">CPF</option>
+                                    <option value="RG">RG</option>
+                                    <option value="CNH">CNH</option>
+                                    <option value="PASSAPORTE">PASSAPORTE</option>
+                                    <option value="OUTRO">OUTRO</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-visitor-doc-number">Número do Documento <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-address-card input-icon"></i>
+                                <input type="text" id="edit-visitor-doc-number" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-visit-target">Pessoa ou Setor a ser Visitado <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-building-user input-icon"></i>
+                                <input type="text" id="edit-visit-target" required class="text-uppercase">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-visit-purpose">Finalidade da Visita <span class="required">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-circle-info input-icon"></i>
+                                <input type="text" id="edit-visit-purpose" required class="text-uppercase">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data e Hora de Entrada -->
+                    <div class="form-group">
+                        <div class="label-with-action">
+                            <label for="edit-visit-entry-time">Data e Hora de Entrada <span class="required">*</span></label>
+                            <button type="button" class="btn-time-now-link" onclick="setDateTimeNow('edit-visit-entry-time')" title="Definir Agora">
+                                <i class="fa-solid fa-clock"></i> Agora
+                            </button>
+                        </div>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-calendar-days input-icon"></i>
+                            <input type="datetime-local" id="edit-visit-entry-time" required>
+                        </div>
+                    </div>
+
+                    <!-- Data e Hora de Saída -->
+                    <div class="form-group">
+                        <div class="label-with-action">
+                            <label for="edit-visit-exit-time">Data e Hora de Saída</label>
+                            <button type="button" class="btn-time-now-link" onclick="setDateTimeNow('edit-visit-exit-time')" title="Definir Agora">
+                                <i class="fa-solid fa-clock"></i> Agora
+                            </button>
+                        </div>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-calendar-days input-icon"></i>
+                            <input type="datetime-local" id="edit-visit-exit-time">
+                        </div>
+                    </div>
+
+                    <div class="form-group-checkbox">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="edit-visit-restricted" onchange="toggleEditRestrictedField()">
+                            <span class="checkbox-checkmark"></span>
+                            <span class="checkbox-label">
+                                <i class="fa-solid fa-triangle-exclamation text-warning"></i> Visita a Área Restrita
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="form-group hidden" id="edit-group-authorizer">
+                        <label for="edit-visit-authorizer">Autorizador da Entrada <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-user-shield input-icon"></i>
+                            <input type="text" id="edit-visit-authorizer" class="text-uppercase">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-visit-notes">Observações</label>
+                        <textarea id="edit-visit-notes" rows="2" class="text-uppercase"></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="delete-confirm-modal" class="modal-backdrop hidden">
+        <div class="modal-card modal-confirm shadow-swiss">
+            <div class="modal-header bg-danger-light">
+                <h4 class="modal-title text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Confirmar Exclusão</h4>
+                <button type="button" class="btn-close-modal" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza de que deseja excluir permanentemente o registro de visita de <strong id="delete-visitor-name-span" class="text-black">...</strong>?</p>
+                <p class="text-secondary text-xs mt-2">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btn-confirm-delete-action">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    </div> <!-- FIM DO APP LAYOUT -->
+
+    <!-- Notificações Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

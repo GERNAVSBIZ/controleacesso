@@ -1,0 +1,20 @@
+# Arquivos de sistema e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs do sistema
+*.log
+navmanager.log
+
+# Arquivos de ambiente locais
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.production.local
+.env.development.local
+.env.local
+config.js
