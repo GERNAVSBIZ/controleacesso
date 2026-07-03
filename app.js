@@ -104,9 +104,7 @@ function initSupabase() {
 
 // --- MAPEADORES DE DADOS (Snake Case PostgreSQL <=> Camel Case Javascript) ---
 function mapVisitToDB(visit) {
-    return {
-        // Envia undefined para inserções para permitir que o PostgreSQL use a sequence autoincremental
-        id: visit.id || undefined, 
+    const dbVisit = {
         full_name: visit.fullName,
         doc_type: visit.docType,
         doc_number: visit.docNumber,
@@ -118,6 +116,12 @@ function mapVisitToDB(visit) {
         authorizer: visit.authorizer || null,
         observations: visit.observations || null
     };
+    
+    if (visit.id) {
+        dbVisit.id = parseInt(visit.id);
+    }
+    
+    return dbVisit;
 }
 
 function mapVisitFromDB(dbVisit) {
