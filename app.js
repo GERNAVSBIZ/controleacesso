@@ -481,7 +481,7 @@ function switchTab(tabId) {
     
     if (tabId === 'acessos') {
         document.getElementById("menu-btn-acessos").classList.add("active");
-        document.getElementById("page-title").textContent = "Controle de Portaria";
+        document.getElementById("page-title").textContent = "Controle de Acesso";
     } else if (tabId === 'relatorios') {
         document.getElementById("menu-btn-relatorios").classList.add("active");
         document.getElementById("page-title").textContent = "Relatórios & Dados";
