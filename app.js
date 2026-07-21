@@ -104,7 +104,7 @@ function initSupabase() {
 
 // --- MAPEADORES DE DADOS (Snake Case PostgreSQL <=> Camel Case Javascript) ---
 function mapVisitToDB(visit) {
-    const dbVisit = {
+    return {
         full_name: visit.fullName,
         doc_type: visit.docType,
         doc_number: visit.docNumber,
@@ -116,12 +116,6 @@ function mapVisitToDB(visit) {
         authorizer: visit.authorizer || null,
         observations: visit.observations || null
     };
-    
-    if (visit.id) {
-        dbVisit.id = parseInt(visit.id);
-    }
-    
-    return dbVisit;
 }
 
 function mapVisitFromDB(dbVisit) {
@@ -756,12 +750,13 @@ async function saveVisitToDB(visit) {
     const dbVisit = mapVisitToDB(visit);
     
     let error = null;
-    if (dbVisit.id) {
-        // Atualização (Update)
+    if (visit.id) {
+        // Atualização (Update) - Omitir coluna identity 'id' do payload do update
+        const visitId = parseInt(visit.id);
         const { error: updateError } = await supabaseClient
             .from('visits')
             .update(dbVisit)
-            .eq('id', dbVisit.id);
+            .eq('id', visitId);
         error = updateError;
     } else {
         // Inserção (Insert)
