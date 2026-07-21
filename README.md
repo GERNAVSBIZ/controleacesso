@@ -1,168 +1,177 @@
-# NavManager - Sistema de Controle de Acesso de Visitantes
+# ⚓ NavManager - Sistema de Controle de Acesso de Visitantes
 
-Este é um sistema moderno, rápido e seguro para o controle de acesso de visitas externas a edifícios corporativos. Desenvolvido sob o padrão visual **NAVMANAGER** (Swiss Design: alta legibilidade, contraste nítido, cantos retos/técnicos e layout corporativo), o sistema foi projetado especificamente para ser hospedado de forma estática no **GitHub Pages** de maneira totalmente gratuita.
-
----
-
-## ⚓ Recursos e Funcionalidades
-
-1. **Formulário de Cadastro Completo (9 Campos):**
-   - **Nome Completo** (Obrigatório)
-   - **Tipo de Documento** (Obrigatório - e.g., CPF, RG, CNH, Passaporte)
-   - **Número do Documento** (Obrigatório)
-   - **Pessoa ou Setor a ser Visitado** (Obrigatório)
-   - **Finalidade da Visita** (Obrigatório)
-   - **Data e Hora de Entrada** (Obrigatório - com botão de definir hora atual "Agora")
-   - **Data e Hora de Saída** (Opcional - com botão de "Agora")
-   - **Área Restrita** (Toggle/Checkbox - quando marcado, exibe o campo obrigatório de **Autorizador**)
-   - **Observações** (Opcional)
-
-2. **Auto-preenchimento e Reconhecimento Inteligente:**
-   - Ao digitar o Nome ou o Número do Documento de um visitante que já esteve no prédio, o sistema exibe sugestões de visitas anteriores.
-   - Ao selecionar a sugestão, o formulário é pré-preenchido com todos os dados históricos daquele visitante (Nome, Tipo de Doc, Número de Doc, Setor Visitado Comum, Finalidade Comum, Autorizador se área restrita e Observações), **mantendo vazios apenas os campos de Data e Hora de Entrada e Saída** para o preenchimento do novo acesso, conforme solicitado.
-
-3. **Banco de Dados Local (IndexedDB):**
-   - Toda a persistência de dados é feita diretamente no navegador através do IndexedDB. Permite salvar milhares de registros localmente sem perdas e sem custos com servidores.
-
-4. **Ferramenta de Exportação e Importação de Backups:**
-   - **Exportar JSON:** Cria um arquivo de backup legível por máquina para guardar com segurança ou transferir para outros computadores.
-   - **Exportar CSV:** Gera uma planilha formatada compatível com o Microsoft Excel (separada por ponto e vírgula e com cabeçalho em português), facilitando a extração de relatórios.
-   - **Importar JSON:** Restaura a base completa a partir de um backup em segundos.
-
-5. **Interface de Portaria Moderna:**
-   - Filtros rápidos por status de visita ("Todos", "Em Andamento", "Finalizados").
-   - Busca em tempo real por nome, documento, setor ou observação.
-   - **Registrar Saída Rápida (Quick Checkout):** Botão na tabela para finalizar a visita registrando a data e hora do momento em apenas um clique.
-   - Modais nativos para edição e exclusão de registros sem comprometer a identidade visual.
+Este documento serve como o **manual completo de referência e arquitetura** do sistema de Controle de Acesso de Visitantes. Aqui estão registrados todos os detalhes técnicos, locais de hospedagem, banco de dados, credenciais de acesso, scripts de manutenção e procedimentos para consulta e manutenção futura.
 
 ---
 
-## 💻 Tecnologias Utilizadas
+## 📌 1. Visão Geral do Sistema
 
-- **Estrutura:** HTML5 Semântico
-- **Estilo:** CSS3 Vanilla (Design Suíço Minimalista, tipografia *Inter* via Google Fonts e ícones *FontAwesome* via CDN)
-- **Comportamento:** Javascript Vanilla (sem bibliotecas pesadas adicionais)
-- **Persistência:** IndexedDB nativo de navegadores modernos
+O **NavManager Controle de Acesso** é uma aplicação web SPA (Single Page Application) desenvolvida sob o padrão visual corporativo escuro (**Swiss Design / Glassmorphism**). Ele foi projetado para registrar o fluxo de entrada e saída de visitantes externos com auditabilidade total, centralizando os registros em um banco de dados relacional permanente na nuvem.
+
+### 🔗 Links Oficiais do Projeto:
+- **URL de Acesso Online (GitHub Pages):** [https://gernavsbiz.github.io/controleacesso/](https://gernavsbiz.github.io/controleacesso/)
+- **Repositório de Código Fonte (GitHub):** [https://github.com/GERNAVSBIZ/controleacesso](https://github.com/GERNAVSBIZ/controleacesso)
+- **Servidor Local de Testes:** `http://localhost:8000`
 
 ---
 
-## 🚀 Como Executar Localmente
+## 🗄️ 2. Arquitetura do Banco de Dados (Supabase PostgreSQL)
 
-Como o sistema é construído 100% no lado do cliente (Front-end), a execução é extremamente simples:
+Os dados não dependem do navegador do operador e não são apagados ao limpar o histórico de navegação. Eles ficam salvos em um banco de dados **PostgreSQL** profissional hospedado na nuvem do **Supabase**.
 
-### Opção 1: Abertura Direta
-Basta dar dois cliques no arquivo [index.html](file:///c:/Users/WilksonAlbuquerqueCa/NAV%20Brasil/PORTAL%20DNIZ%20-%20PORTAL%20DNIZ/SISTEMAS%20DNIZ/ANTIGRAVITY/CONTROLE_ACESSO/index.html) no gerenciador de arquivos e ele rodará no seu navegador padrão.
+### ⚙️ Credenciais e Endereço do Servidor:
+- **Plataforma:** [Supabase Cloud](https://supabase.com)
+- **URL do Projeto:** `https://zyxvjgpjghkkpsdxwxlk.supabase.co`
+- **Arquivo de Chaves Local:** `config.js` (localizado na raiz do projeto)
 
-### Opção 2: Servidor Local Simples (Recomendado)
-Se você estiver utilizando o VS Code, pode abrir o projeto e iniciar a extensão **Live Server**.
-Alternativamente, no terminal de comando do seu sistema na pasta do projeto, você pode rodar:
-```bash
-# Se tiver Python instalado
-python -m http.server 8000
+```javascript
+// Conteúdo do arquivo config.js
+const SUPABASE_URL = "https://zyxvjgpjghkkpsdxwxlk.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_x72E8KkmmzoqsLRSLCav1w_SJhHei-8";
 ```
-Depois, acesse no navegador: `http://localhost:8000`
 
 ---
 
----
+## 📜 3. Esquema das Tabelas e Scripts SQL
 
-## ☁️ 1. Configuração do Banco de Dados no Supabase (Nuvem)
+### 3.1. Tabelas do Banco de Dados
 
-Siga este passo a passo para criar e preparar seu banco de dados centralizado permanente:
+1. **`users`** (Controle de Operadores e Administradores):
+   - `username` (TEXT - Chave Primária): Nome de login do operador (em minúsculas).
+   - `full_name` (TEXT): Nome completo do usuário.
+   - `role` (TEXT): Perfil de acesso (`admin` ou `operator`).
+   - `password_hash` (TEXT): Hash criptográfico SHA-256 da senha.
+   - `created_at` (TIMESTAMPTZ): Data e hora de criação do cadastro.
 
-1. **Crie sua conta:**
-   - Acesse [supabase.com](https://supabase.com) e crie uma conta gratuita.
-2. **Crie um novo projeto:**
-   - Clique em **New Project**.
-   - Defina um nome (ex: `controle-portaria-predio`).
-   - Defina uma senha forte para o banco de dados.
-   - Selecione a região física de servidor mais próxima (ex: *Sao Paulo - sa-east-1*).
-   - Aguarde cerca de 2 minutos para o provisionamento do banco.
-3. **Crie as tabelas (SQL Editor):**
-   - No menu lateral esquerdo do Supabase, clique em **SQL Editor** (ícone de terminal `>_`).
-   - Clique em **New Query**.
-   - Cole o seguinte script SQL de criação das tabelas e clique em **Run** (botão verde no canto inferior direito):
-     ```sql
-     -- Tabela de Usuários (Operadores e Admins)
-     CREATE TABLE IF NOT EXISTS users (
-         username TEXT PRIMARY KEY,
-         full_name TEXT NOT NULL,
-         role TEXT NOT NULL CHECK (role IN ('admin', 'operator')),
-         password_hash TEXT NOT NULL,
-         created_at TIMESTAMPTZ DEFAULT NOW()
-     );
+2. **`visits`** (Logs de Auditoria de Acesso de Visitantes):
+   - `id` (BIGINT - Identity Autoincremental): Identificador único do registro.
+   - `full_name` (TEXT): Nome completo do visitante.
+   - `doc_type` (TEXT): Tipo de documento (CPF, RG, CNH, PASSAPORTE, OUTRO).
+   - `doc_number` (TEXT): Número do documento fornecido.
+   - `visited_person_or_sector` (TEXT): Pessoa ou Setor visitado (Ex: GERÊNCIA).
+   - `purpose` (TEXT): Finalidade da visita.
+   - `entry_date_time` (TIMESTAMPTZ): Data e hora de entrada.
+   - `exit_date_time` (TIMESTAMPTZ - Nulo se em andamento): Data e hora de saída.
+   - `is_restricted` (BOOLEAN): Indicador de acesso a área restrita.
+   - `authorizer` (TEXT - Opcional): Nome do responsável que autorizou a entrada em área restrita.
+   - `observations` (TEXT - Opcional): Notas adicionais sobre o acesso.
+   - `created_at` (TIMESTAMPTZ): Data de registro no sistema.
 
-     -- Tabela de Visitas (Logs de Acesso da Portaria)
-     CREATE TABLE IF NOT EXISTS visits (
-         id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-         full_name TEXT NOT NULL,
-         doc_type TEXT NOT NULL,
-         doc_number TEXT NOT NULL,
-         visited_person_or_sector TEXT NOT NULL,
-         purpose TEXT NOT NULL,
-         entry_date_time TIMESTAMPTZ NOT NULL,
-         exit_date_time TIMESTAMPTZ,
-         is_restricted BOOLEAN NOT NULL DEFAULT FALSE,
-         authorizer TEXT,
-         observations TEXT,
-         created_at TIMESTAMPTZ DEFAULT NOW()
-     );
-     ```
-4. **Obtenha suas chaves de acesso:**
-   - No menu do rodapé esquerdo, clique em **Project Settings** (ícone de engrenagem).
-   - Clique na opção **API**.
-   - Copie os valores dos campos:
-     - **Project API URL** (ex: `https://xxxxxx.supabase.co`)
-     - **`anon` `public` API Key** (chave longa de acesso público)
+### 3.2. Script SQL Completo de Criação das Tabelas e Permissões
 
----
+Para criar ou reconstruir o banco de dados no **SQL Editor** do Supabase, execute o código abaixo:
 
-## 🔑 2. Configurando o Projeto Localmente
+```sql
+-- 1. Tabela de Usuários
+CREATE TABLE IF NOT EXISTS users (
+    username TEXT PRIMARY KEY,
+    full_name TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('admin', 'operator')),
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
-1. Na pasta do seu projeto no computador, localize o arquivo **[config.js](file:///c:/Users/WilksonAlbuquerqueCa/NAV%20Brasil/PORTAL%20DNIZ%20-%20PORTAL%20DNIZ/SISTEMAS%20DNIZ/ANTIGRAVITY/CONTROLE_ACESSO/config.js)** (que foi criado na raiz).
-2. Cole as suas chaves nos campos correspondentes:
-   ```javascript
-   const SUPABASE_URL = "SUA_URL_DO_SUPABASE_AQUI";
-   const SUPABASE_ANON_KEY = "SUA_CHAVE_PUBLICA_ANONIMA_DO_SUPABASE_AQUI";
-   ```
-3. Atualize o navegador local (`localhost:8000`) e a tela de login já estará ativa! Faça o primeiro acesso com o usuário `admin` e a senha `admin123`.
+-- 2. Tabela de Visitas
+CREATE TABLE IF NOT EXISTS visits (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    full_name TEXT NOT NULL,
+    doc_type TEXT NOT NULL,
+    doc_number TEXT NOT NULL,
+    visited_person_or_sector TEXT NOT NULL,
+    purpose TEXT NOT NULL,
+    entry_date_time TIMESTAMPTZ NOT NULL,
+    exit_date_time TIMESTAMPTZ,
+    is_restricted BOOLEAN NOT NULL DEFAULT FALSE,
+    authorizer TEXT,
+    observations TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
----
+-- 3. Liberação de Permissões de Acesso (Desabilita RLS e concede privilégios ao aplicativo)
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE visits DISABLE ROW LEVEL SECURITY;
 
-## ☁️ 3. Como Hospedar com Segurança no GitHub Pages
-
-Como este sistema armazena informações de portaria e logins de funcionários (que constituem evidências de auditoria), **é altamente recomendado que o seu repositório no GitHub seja configurado como PRIVADO**.
-
-1. **Crie um repositório PRIVADO no GitHub:**
-   - Acesse seu perfil do GitHub e clique em **New Repository**.
-   - Defina o nome (ex: `controle-acesso`).
-   - Marque a opção **Private** (Privado) e clique em **Create Repository**.
-2. **Suba os arquivos para o repositório:**
-   - Como o repositório é privado, você pode comitar o arquivo `config.js` com segurança para que o GitHub Pages consiga carregar a conexão com o banco!
-   - Execute no terminal local da pasta:
-     ```bash
-     git init
-     # Para podermos subir o config.js em repositório privado, adicione os arquivos manualmente:
-     git add index.html style.css app.js config.js config.example.js .gitignore README.md
-     git commit -m "Deployment: NavManager Controle Acesso com Supabase"
-     git branch -M main
-     git remote add origin https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-     git push -u origin main
-     ```
-3. **Ative o GitHub Pages:**
-   - No painel do seu repositório no GitHub, clique na aba **Settings** (Configurações) no menu superior.
-   - No menu lateral esquerdo, clique em **Pages**.
-   - Sob "Build and deployment", na opção **Source**, selecione **Deploy from a branch**.
-   - Em **Branch**, selecione a branch `main` e defina a pasta como `/ (root)`.
-   - Clique em **Save**.
-4. **Acesse o Sistema Online:**
-   Aguarde cerca de 1 minuto. O GitHub Pages fornecerá a URL pública no topo da tela (ex: `https://seu-usuario.github.io/controle-acesso/`). O sistema já estará online e gravando os logs de forma centralizada!
+GRANT ALL ON TABLE users TO anon;
+GRANT ALL ON TABLE visits TO anon;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
+```
 
 ---
 
-## ⚠️ Recomendações de Auditoria e Backup
+## 🔐 4. Autenticação, Perfis e Reset de Senha
 
-> [!IMPORTANT]
-> 1. **Logs de Auditoria Seguros:** Como os logs residem no banco de dados central do Supabase, eles estão protegidos contra limpeza de cache do navegador local.
-> 2. **Senhas Criptografadas:** As senhas dos usuários utilizam algoritmo de hash SHA-256 local, garantindo que mesmo se alguém invadir o painel do Supabase, não poderá ler as senhas originais dos operadores.
-> 3. **Exportação Extra:** Para maior redundância de auditoria, faça downloads periódicos da planilha em formato **CSV** no fim de cada ciclo administrativo através da aba "Relatórios & Dados".
+### 4.1. Perfis de Acesso
+- **Administrador (`admin`):** Tem acesso total ao sistema, incluindo o menu **"Gerenciar Usuários"** (para criar/editar/excluir operadores) e a aba **"Relatórios & Dados"** (para exportar planilhas CSV e backups JSON).
+- **Operador (`operator`):** Tem acesso apenas ao registro de novas entradas, pesquisa de visitantes e marcação de saída rápida. Não visualiza guias de gestão nem pode excluir registros de visitas.
+
+### 4.2. Credencial Padrão Inicial
+- **Usuário:** `admin`
+- **Senha Inicial:** `admin123`
+
+### 🔑 4.3. Como Resetar a Senha de Admin (Se esquecer o Login/Senha)
+Caso a senha seja perdida e você precise zerar a senha do `admin` para a senha padrão `admin123`:
+
+1. Acesse [supabase.com/dashboard](https://supabase.com/dashboard) e entre na sua conta.
+2. Abra o menu **SQL Editor** (`>_`) e execute a seguinte query SQL:
+
+```sql
+-- Reseta a senha do usuário 'admin' para 'admin123'
+UPDATE users 
+SET password_hash = '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9' 
+WHERE username = 'admin';
+
+-- Caso o usuário tenha sido deletado, recria a conta com a senha padrão 'admin123'
+INSERT INTO users (username, full_name, role, password_hash)
+VALUES ('admin', 'ADMINISTRADOR PADRÃO', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9')
+ON CONFLICT (username) DO UPDATE 
+SET password_hash = '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9';
+```
+
+---
+
+## 📂 5. Estrutura de Arquivos da Aplicação
+
+```
+CONTROLE_ACESSO/
+├── index.html           # Interface SPA completa (HTML5)
+├── style.css            # Estilização visual (Swiss Design / NavManager Dark)
+├── app.js               # Lógica em JavaScript Vanilla e integração Supabase
+├── config.js            # Credenciais ativas do banco de dados (URL e Anon Key)
+├── config.example.js    # Modelo de exemplo do arquivo de configuração
+├── .gitignore           # Regras de exclusão do Git
+└── README.md            # Este manual de referência do sistema
+```
+
+---
+
+## 🛠️ 6. Histórico de Melhorias e Ajustes Realizados
+
+1. **Alinhamento e Normalização Visual:**
+   - Padronização de altura de todos os campos para `48px`.
+   - Ajuste fino do alinhamento vertical dos títulos de cada campo (`min-height: 28px; display: flex; align-items: flex-end;`).
+   - Correção do contraste das listas suspensas (drop-downs) no Windows Chromium com fundo escuro `#121a2f`.
+   - Inclusão do texto de exemplo no campo de destino: **`EX: GERÊNCIA`**.
+
+2. **Segurança e Criptografia:**
+   - Criptografia de senhas usando **SHA-256**.
+   - Implementado fallback puro em JS para permitir hash de senhas em redes de intranet ou domínios HTTP não-seguros (onde o `crypto.subtle` nativo do navegador fica desativado por regra de segurança do browser).
+
+3. **Correção de Persistência no PostgreSQL:**
+   - Solucionado o erro HTTP 400 em Saídas Rápida e Edição: O payload enviava a propriedade `id` em atualizações (`UPDATE`). Como a coluna `id` do PostgreSQL é do tipo `GENERATED ALWAYS AS IDENTITY`, ela não pode ser alterada. O código do `app.js` foi ajustado para remover o campo `id` da lista de alterações e utilizá-lo somente no filtro `.eq('id', visitId)`.
+
+---
+
+## 🚨 7. Solução de Problemas Frequentes
+
+### 1. "O site não carrega ou o login diz falha de comunicação"
+- **Causa:** No plano gratuito do Supabase, o banco entra em modo de pausa se ficar 7 dias consecutivos sem nenhum acesso.
+- **Solução:** Acesse o painel em [supabase.com/dashboard](https://supabase.com/dashboard) e clique em **Restore Project**. O banco voltará a responder em 1 minuto.
+
+### 2. "Como enviar novas alterações para o GitHub?"
+No terminal da pasta do projeto, execute:
+```bash
+git add .
+git commit -m "Descricao das alteracoes feitas"
+git push origin main
+```
+O GitHub Pages atualizará o site online automaticamente em cerca de 30 segundos.
