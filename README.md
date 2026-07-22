@@ -1,4 +1,4 @@
-# ⚓ NavManager - Sistema de Controle de Acesso de Visitantes
+# ✈️ NavManager - Sistema de Controle de Acesso de Visitantes
 
 Este documento serve como o **manual completo de referência e arquitetura** do sistema de Controle de Acesso de Visitantes. Aqui estão registrados todos os detalhes técnicos, locais de hospedagem, banco de dados, credenciais de acesso, scripts de manutenção e procedimentos para consulta e manutenção futura.
 
